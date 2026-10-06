@@ -1,6 +1,6 @@
 local Triggrd = {
     name = "Triggrd",
-    version = "2.0",
+    version = "2.0.1",
     author = "Guillem León <guilevi2000@gmail.com>; Mikolaj Holysz <miki123211@gmail.com>",
     license = "The Unlicense, <https://unlicense.org>",
     homepage = "https://github.com/guilevi/Triggrd",
@@ -60,7 +60,16 @@ local function audioHandler(path)
             return
         end
         sound:currentTime(0)
-        sound:play()
+        -- NSSound can get stuck believing it is still playing (position frozen
+        -- at 0, e.g. after the output device changed mid-sound), and then
+        -- refuses every play() and the sound is silent from then on. stop()
+        -- clears that; for a sound that really is playing, this just restarts
+        -- it, as before.
+        if not sound:play() then
+            sound:stop()
+            sound:currentTime(0)
+            sound:play()
+        end
     end
 end
 
